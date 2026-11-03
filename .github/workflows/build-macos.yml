@@ -21,6 +21,14 @@ jobs:
       - name: Kompilieren
         run: cmake --build build --config Release --parallel 4
 
+      # Sicherheitsnetz: Die NAM-Modelltypen müssen im fertigen Plugin enthalten sein
+      - name: NAM-Code im Plugin prüfen
+        run: |
+          BIN="build/KlangbildDuo_artefacts/Release/AU/Klangbild Duo.component/Contents/MacOS/Klangbild Duo"
+          COUNT=$(nm -C "$BIN" | grep -c "nam::wavenet" || true)
+          echo "WaveNet-Symbole: $COUNT"
+          test "$COUNT" -gt 0
+
       - name: Ad-hoc signieren
         run: |
           cd build/KlangbildDuo_artefacts/Release

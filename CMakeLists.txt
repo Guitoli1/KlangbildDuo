@@ -48,13 +48,30 @@ juce_add_binary_data(DuoAssets SOURCES
 file(GLOB NAM_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/NAM/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/NAM/*/*.cpp")
-set_source_files_properties(${NAM_SOURCES} PROPERTIES COMPILE_OPTIONS "-w")
+# Wichtig: NAM meldet seine Modelltypen (WaveNet, LSTM, ...) über statische Objekte an.
+# Lägen diese Dateien in der statischen Shared-Code-Bibliothek von JUCE, würde der Linker
+# sie als "unbenutzt" verwerfen - dann ließe sich kein Profil laden. Deshalb werden sie
+# als Objektdateien direkt in jedes Plugin-Format (AU, VST3, Standalone) gelinkt.
+add_library(nam_core OBJECT ${NAM_SOURCES})
+set_target_properties(nam_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_compile_options(nam_core PRIVATE -w)
+target_compile_definitions(nam_core PRIVATE EIGEN_MPL2_ONLY=1)
+target_include_directories(nam_core SYSTEM PRIVATE
+    ThirdParty ThirdParty/NAM ThirdParty/nlohmann ThirdParty/eigen)
+if(APPLE)
+    set_target_properties(nam_core PROPERTIES OSX_ARCHITECTURES "${CMAKE_OSX_ARCHITECTURES}")
+endif()
 
 target_sources(KlangbildDuo PRIVATE
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp
-    Source/VintageUI.cpp
-    ${NAM_SOURCES})
+    Source/VintageUI.cpp)
+
+foreach(fmt ${KB_FORMATS})
+    if(TARGET KlangbildDuo_${fmt})
+        target_sources(KlangbildDuo_${fmt} PRIVATE $<TARGET_OBJECTS:nam_core>)
+    endif()
+endforeach()
 
 target_include_directories(KlangbildDuo PRIVATE Source)
 target_include_directories(KlangbildDuo SYSTEM PRIVATE

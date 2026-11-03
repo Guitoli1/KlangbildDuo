@@ -30,6 +30,11 @@ public:
             error = juce::String (e.what());
             return nullptr;
         }
+        catch (...)
+        {
+            error = "Unbekannter Fehler beim Laden";
+            return nullptr;
+        }
         if (slot->model == nullptr)
         {
             error = "Datei konnte nicht gelesen werden";
