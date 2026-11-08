@@ -2,3 +2,5 @@ build/
 JUCE/
 .DS_Store
 *.xcodeproj
+Deps/
+models/
