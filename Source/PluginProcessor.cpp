@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "ScaledEditor.h"
 
 namespace
 {
@@ -312,6 +313,6 @@ void DuoAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
     }
 }
 
-juce::AudioProcessorEditor* DuoAudioProcessor::createEditor() { return new DuoAudioProcessorEditor (*this); }
+juce::AudioProcessorEditor* DuoAudioProcessor::createEditor() { return new kb::ScaledEditor (*this, new DuoAudioProcessorEditor (*this)); }
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new DuoAudioProcessor(); }
